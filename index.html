@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#315efb">
+<meta name="description" content="PainPoint — pinpoint your pain and understand your symptoms.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>PainPoint — Pinpoint your pain</title>
+<style>
+:root{--ink:#18212b;--muted:#687582;--bg:#f5f7f9;--card:#fff;--accent:#315efb;--accent2:#e9edff;--danger:#b42318;--line:#e3e7eb}
+*{box-sizing:border-box}html{background:var(--bg)}body{margin:0;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink)}
+button,input,select{font:inherit}.app{max-width:560px;margin:auto;min-height:100vh;background:var(--bg)}
+header{padding:20px 20px 14px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.brand{font-size:25px;font-weight:800;letter-spacing:-.6px}.tag{color:var(--muted);font-size:13px;margin-top:2px}
+main{padding:18px 16px 100px}.screen{display:none}.screen.active{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;box-shadow:0 4px 16px rgba(20,30,40,.04)}
+h1{font-size:28px;line-height:1.1;margin:8px 0 10px}h2{font-size:21px;margin:0 0 8px}h3{font-size:16px;margin:18px 0 9px}
+p{line-height:1.5;color:#4f5d69}.small{font-size:13px;color:var(--muted)}
+.btn{width:100%;border:0;border-radius:14px;padding:14px 16px;font-weight:750;cursor:pointer;margin-top:12px}.primary{background:var(--accent);color:white}.secondary{background:#eef1f4;color:var(--ink)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.choice{display:flex;gap:10px}.choice button{flex:1;background:#fff;border:1px solid var(--line);border-radius:14px;padding:13px;cursor:pointer}.choice button.selected{border:2px solid var(--accent);background:var(--accent2)}
+.toggle{display:flex;gap:8px;margin:10px 0}.toggle button{flex:1;border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px;cursor:pointer}.toggle button.selected{background:var(--accent);color:#fff;border-color:var(--accent)}
+.body-wrap{display:flex;justify-content:center;margin:14px 0}.body-svg{width:180px;height:390px}.zone{fill:#dfe4e9;stroke:#b7c0c8;stroke-width:1.5;cursor:pointer;transition:.15s}.zone:hover,.zone.selected{fill:#315efb;stroke:#2447c4}.zone.selected{opacity:.92}
+.field{margin:12px 0}.field label{display:block;font-weight:700;font-size:14px;margin-bottom:7px}.field input,.field select{width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;background:#fff}
+.range-row{display:flex;align-items:center;gap:12px}.range-row input{flex:1}.score{font-weight:800;font-size:20px;min-width:28px;text-align:center}
+.chips{display:flex;flex-wrap:wrap;gap:8px}.chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:9px 12px;cursor:pointer}.chip.selected{background:var(--accent2);border-color:var(--accent);color:#2447c4}
+.alert{background:#fff4f2;border:1px solid #f4c7c2;color:#7a271a;border-radius:15px;padding:14px;margin:12px 0}.result{border:1px solid var(--line);border-radius:15px;padding:14px;margin:10px 0;background:#fff}.result strong{display:block;margin-bottom:5px}
+.progress{height:5px;background:#e9edf1;border-radius:9px;overflow:hidden;margin:12px 0 20px}.progress span{display:block;height:100%;background:var(--accent);transition:width .2s}
+.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);max-width:560px;width:100%;background:#fff;border-top:1px solid var(--line);padding:10px 16px;display:flex;gap:8px;z-index:10}.nav button{flex:1;border:0;background:transparent;padding:8px;color:var(--muted);font-size:12px}.nav button.active{color:var(--accent);font-weight:800}
+.logo-mark{display:inline-flex;width:28px;height:28px;border-radius:9px;background:var(--accent);color:#fff;align-items:center;justify-content:center;margin-right:7px}
+.install{display:none;margin-top:10px}.history-item{border:1px solid var(--line);border-radius:14px;padding:12px;margin:9px 0;background:#fff}.history-item strong{display:block}.empty{text-align:center;padding:20px;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+
+/* PainPoint v3 polish */
+.subtitle{max-width:480px}
+.body-wrap{min-height:430px;align-items:center}
+.body-stage{position:relative;width:260px;max-width:100%}
+.body-svg{width:220px;height:430px;display:block;margin:auto}
+.body-svg .zone{fill:#dfe4e9;stroke:#aeb8c1;stroke-width:1.4;cursor:pointer;transition:.15s}
+.body-svg .zone:hover,.body-svg .zone.selected{fill:#315efb;stroke:#2447c4}
+.body-svg .zone.selected{opacity:.95}
+.legend{font-size:12px;color:var(--muted);text-align:center;margin-top:6px}
+.quick-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-top:10px}
+.quick{padding:11px;border:1px solid var(--line);background:#fff;border-radius:12px;text-align:left;cursor:pointer}
+.quick.selected{border-color:var(--accent);background:var(--accent2)}
+.question-note{background:#f7f9ff;border:1px solid #dfe5ff;border-radius:13px;padding:11px;margin:10px 0;font-size:13px;color:#42506b}
+.badge{display:inline-block;font-size:11px;font-weight:800;padding:5px 8px;border-radius:999px;background:#eef1f4;color:#4f5d69;margin:3px 3px 0 0}
+.badge.warn{background:#fff0ed;color:#8a2c20}
+.result .why{color:#687582;font-size:13px;margin-top:5px}
+.safe{background:#f4fbf6;border:1px solid #ccebd5;color:#215d31;border-radius:15px;padding:14px;margin:12px 0}
+.danger-list{margin:8px 0 0 18px;padding:0}
+.disclaimer{font-size:12px;color:#687582;line-height:1.45}
+@media(max-width:390px){.body-svg{width:195px}.quick-grid{grid-template-columns:1fr}}
+
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <div class="brand"><span class="logo-mark">P</span>PainPoint</div>
+  <div class="tag">Pinpoint your pain. Understand your symptoms.</div>
+  <button id="installBtn" class="btn secondary install">Install PainPoint</button>
+</header>
+
+<main>
+<section id="home" class="screen active">
+<div class="card">
+<h1>Where does it hurt?</h1>
+<p>Tap the body where you feel pain. You can select more than one area.</p>
+<h3>Body presentation</h3><p class="small">Choose the body presentation that is most relevant to you. This does not change the medical advice by itself.</p>
+<div class="choice">
+<button id="female" onclick="setSex('Female')">♀ Female</button>
+<button id="male" onclick="setSex('Male')">♂ Male</button>
+</div>
+<button class="btn primary" onclick="show('map')">Start pinpointing</button>
+<p class="small">PainPoint provides general health information and is not a diagnosis or a substitute for professional medical advice.</p>
+</div>
+</section>
+
+<section id="map" class="screen">
+<div class="progress"><span style="width:33%"></span></div>
+<div class="card">
+<h2>Pinpoint the pain</h2><p class="small">Choose front or back, then tap the closest area.</p>
+<div class="toggle"><button id="frontBtn" class="selected" onclick="setView('front')">Front</button><button id="backBtn" onclick="setView('back')">Back</button></div>
+<div class="body-wrap">
+<div>
+<svg id="frontSvg" class="body-svg" viewBox="0 0 200 470" aria-label="Detailed front body map">
+  <circle class="zone" data-zone="head" cx="100" cy="31" r="25"/>
+  <rect class="zone" data-zone="neck" x="88" y="54" width="24" height="27" rx="8"/>
+  <path class="zone" data-zone="left-shoulder" d="M58 77 Q75 67 89 79 L82 105 Q65 101 51 91Z"/>
+  <path class="zone" data-zone="right-shoulder" d="M142 77 Q125 67 111 79 L118 105 Q135 101 149 91Z"/>
+  <path class="zone" data-zone="left-chest" d="M50 90 Q70 77 99 91 L99 137 Q73 142 50 125Z"/>
+  <path class="zone" data-zone="right-chest" d="M150 90 Q130 77 101 91 L101 137 Q127 142 150 125Z"/>
+  <path class="zone" data-zone="upper-abdomen" d="M51 126 Q75 141 99 138 L99 184 Q75 188 54 174Z"/>
+  <path class="zone" data-zone="upper-abdomen-right" d="M149 126 Q125 141 101 138 L101 184 Q125 188 146 174Z"/>
+  <path class="zone" data-zone="lower-abdomen-left" d="M54 174 Q76 188 99 184 L96 222 Q75 227 58 211Z"/>
+  <path class="zone" data-zone="lower-abdomen-right" d="M146 174 Q124 188 101 184 L104 222 Q125 227 142 211Z"/>
+  <path class="zone" data-zone="pelvis" d="M58 211 Q100 227 142 211 L132 245 Q100 258 68 245Z"/>
+  <path class="zone" data-zone="left-upper-arm" d="M50 88 L29 103 L17 157 L35 161 L58 111Z"/>
+  <path class="zone" data-zone="right-upper-arm" d="M150 88 L171 103 L183 157 L165 161 L142 111Z"/>
+  <path class="zone" data-zone="left-elbow" d="M17 157 L35 161 L32 180 L14 176Z"/>
+  <path class="zone" data-zone="right-elbow" d="M183 157 L165 161 L168 180 L186 176Z"/>
+  <path class="zone" data-zone="left-forearm" d="M14 176 L32 180 L28 225 L10 220Z"/>
+  <path class="zone" data-zone="right-forearm" d="M186 176 L168 180 L172 225 L190 220Z"/>
+  <path class="zone" data-zone="left-hand" d="M10 220 L28 225 L27 245 L9 241Z"/>
+  <path class="zone" data-zone="right-hand" d="M190 220 L172 225 L173 245 L191 241Z"/>
+  <path class="zone" data-zone="left-thigh" d="M68 244 L97 249 L91 340 L68 340Z"/>
+  <path class="zone" data-zone="right-thigh" d="M103 249 L132 244 L132 340 L109 340Z"/>
+  <path class="zone" data-zone="left-knee" d="M68 340 L91 340 L90 367 L68 367Z"/>
+  <path class="zone" data-zone="right-knee" d="M109 340 L132 340 L132 367 L110 367Z"/>
+  <path class="zone" data-zone="left-lower-leg" d="M68 367 L90 367 L87 433 L68 433Z"/>
+  <path class="zone" data-zone="right-lower-leg" d="M110 367 L132 367 L132 433 L113 433Z"/>
+  <path class="zone" data-zone="left-foot" d="M68 433 L87 433 L92 448 L65 448Z"/>
+  <path class="zone" data-zone="right-foot" d="M113 433 L132 433 L135 448 L108 448Z"/>
+</svg>
+<svg id="backSvg" class="body-svg" viewBox="0 0 200 470" style="display:none" aria-label="Detailed back body map">
+  <circle class="zone" data-zone="head" cx="100" cy="31" r="25"/>
+  <rect class="zone" data-zone="neck" x="88" y="54" width="24" height="27" rx="8"/>
+  <path class="zone" data-zone="left-shoulder" d="M58 77 Q75 67 89 79 L82 105 Q65 101 51 91Z"/>
+  <path class="zone" data-zone="right-shoulder" d="M142 77 Q125 67 111 79 L118 105 Q135 101 149 91Z"/>
+  <path class="zone" data-zone="upper-back-left" d="M50 90 Q75 77 99 88 L99 143 Q74 149 50 130Z"/>
+  <path class="zone" data-zone="upper-back-right" d="M150 90 Q125 77 101 88 L101 143 Q126 149 150 130Z"/>
+  <path class="zone" data-zone="lower-back-left" d="M50 130 Q75 149 99 143 L99 207 Q76 214 54 190Z"/>
+  <path class="zone" data-zone="lower-back-right" d="M150 130 Q125 149 101 143 L101 207 Q124 214 146 190Z"/>
+  <path class="zone" data-zone="pelvis" d="M54 190 Q100 210 146 190 L134 246 Q100 258 66 246Z"/>
+  <path class="zone" data-zone="left-upper-arm" d="M50 88 L29 103 L17 157 L35 161 L58 111Z"/>
+  <path class="zone" data-zone="right-upper-arm" d="M150 88 L171 103 L183 157 L165 161 L142 111Z"/>
+  <path class="zone" data-zone="left-elbow" d="M17 157 L35 161 L32 180 L14 176Z"/>
+  <path class="zone" data-zone="right-elbow" d="M183 157 L165 161 L168 180 L186 176Z"/>
+  <path class="zone" data-zone="left-forearm" d="M14 176 L32 180 L28 225 L10 220Z"/>
+  <path class="zone" data-zone="right-forearm" d="M186 176 L168 180 L172 225 L190 220Z"/>
+  <path class="zone" data-zone="left-hand" d="M10 220 L28 225 L27 245 L9 241Z"/>
+  <path class="zone" data-zone="right-hand" d="M190 220 L172 225 L173 245 L191 241Z"/>
+  <path class="zone" data-zone="left-thigh" d="M68 244 L97 249 L91 340 L68 340Z"/>
+  <path class="zone" data-zone="right-thigh" d="M103 249 L132 244 L132 340 L109 340Z"/>
+  <path class="zone" data-zone="left-knee" d="M68 340 L91 340 L90 367 L68 367Z"/>
+  <path class="zone" data-zone="right-knee" d="M109 340 L132 340 L132 367 L110 367Z"/>
+  <path class="zone" data-zone="left-lower-leg" d="M68 367 L90 367 L87 433 L68 433Z"/>
+  <path class="zone" data-zone="right-lower-leg" d="M110 367 L132 367 L132 433 L113 433Z"/>
+  <path class="zone" data-zone="left-foot" d="M68 433 L87 433 L92 448 L65 448Z"/>
+  <path class="zone" data-zone="right-foot" d="M113 433 L132 433 L135 448 L108 448Z"/>
+</svg>
+</div></div>
+<div id="selectedText" class="small">No area selected yet.</div>
+<button id="mapContinue" class="btn primary" onclick="show('details')" disabled>Continue</button>
+</div></section>
+
+
+<section id="details" class="screen">
+<div class="progress"><span style="width:66%"></span></div>
+<div class="card"><h2>Tell us about the pain</h2>
+<p class="question-note">The more detail you provide, the more relevant the information can be. These answers do not diagnose the cause.</p>
+<div class="field"><label>How severe is it? <span id="score">5</span>/10</label><div class="range-row"><input id="severity" type="range" min="0" max="10" value="5"><div class="score" id="score2">5</div></div></div>
+<div class="field"><label>What does it feel like?</label><div class="chips" id="types">
+<button class="chip" onclick="toggleChip(this)">Sharp</button><button class="chip" onclick="toggleChip(this)">Dull</button><button class="chip" onclick="toggleChip(this)">Burning</button><button class="chip" onclick="toggleChip(this)">Throbbing</button><button class="chip" onclick="toggleChip(this)">Cramping</button><button class="chip" onclick="toggleChip(this)">Pressure</button><button class="chip" onclick="toggleChip(this)">Aching</button><button class="chip" onclick="toggleChip(this)">Tingling</button></div></div>
+<div class="field"><label>When did it start?</label><select id="duration"><option>Less than a day</option><option>1–3 days</option><option>4–7 days</option><option>More than a week</option><option>More than a month</option></select></div>
+<div class="field"><label>Is it getting worse?</label><div class="choice" id="trend"><button onclick="selectSingle(this,'trend')">No / improving</button><button onclick="selectSingle(this,'trend')">About the same</button><button onclick="selectSingle(this,'trend')">Getting worse</button></div></div>
+<div class="field"><label>What affects it?</label><div class="chips" id="triggers">
+<button class="chip" onclick="toggleChip(this)">Movement</button><button class="chip" onclick="toggleChip(this)">Exercise</button><button class="chip" onclick="toggleChip(this)">Eating</button><button class="chip" onclick="toggleChip(this)">Breathing</button><button class="chip" onclick="toggleChip(this)">Touch</button><button class="chip" onclick="toggleChip(this)">Nothing obvious</button></div></div>
+<div class="field"><label>Other symptoms</label><div class="chips" id="otherSymptoms">
+<button class="chip" onclick="toggleChip(this)">Fever</button><button class="chip" onclick="toggleChip(this)">Nausea</button><button class="chip" onclick="toggleChip(this)">Vomiting</button><button class="chip" onclick="toggleChip(this)">Swelling</button><button class="chip" onclick="toggleChip(this)">Numbness</button><button class="chip" onclick="toggleChip(this)">Weakness</button><button class="chip" onclick="toggleChip(this)">Rash</button><button class="chip" onclick="toggleChip(this)">Breathing trouble</button><button class="chip" onclick="toggleChip(this)">Bleeding</button><button class="chip" onclick="toggleChip(this)">Fainting</button></div></div>
+<button class="btn primary" onclick="showResults()">See symptom information</button>
+</div></section>
+
+
+<section id="results" class="screen">
+<div class="card"><h2>Symptom information</h2><p id="summary"></p>
+<div id="urgent" class="alert" style="display:none"><strong>Seek urgent medical help</strong><br>Some combinations of symptoms can require prompt assessment. If symptoms are severe, rapidly worsening, or you feel seriously unwell, seek urgent medical help. In the UK, call 999 for a life-threatening emergency; NHS 111 can help with urgent advice when it is not an emergency.</div>
+<h3>Possible causes to consider</h3><div id="causeResults"></div><p class="small"><strong>Important:</strong> These are general possibilities, not a diagnosis. Symptoms can have many causes, and this app cannot determine the cause of your pain. A clinician may need an examination, medical history or tests.</p>
+<button class="btn secondary" onclick="showHistory()">View history</button>
+<button class="btn secondary" onclick="resetAssessment()">Start another check</button>
+</div>
+</section>
+
+<section id="history" class="screen">
+<div class="card"><h2>History</h2><p class="small">Assessments are stored only on this device.</p>
+<div id="historyList"></div>
+<button class="btn secondary" onclick="clearHistory()">Clear history</button>
+</div>
+</section>
+</main>
+
+<div class="nav">
+<button class="active" onclick="show('home')">⌂<br>Home</button>
+<button onclick="show('map')">◉<br>Body map</button>
+<button onclick="showHistory()">☷<br>History</button>
+</div>
+</div>
+
+<script>
+const state={sex:'',view:'front',zones:[]};
+let deferredInstallPrompt=null;
+
+function show(id){
+  document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
+  const map={home:0,map:1,details:1,results:2,history:2}; document.querySelectorAll('.nav button')[map[id]??0].classList.add('active');
+  window.scrollTo(0,0);
+}
+function setSex(s){state.sex=s;female.classList.toggle('selected',s==='Female');male.classList.toggle('selected',s==='Male')}
+function setView(v){state.view=v;frontBtn.classList.toggle('selected',v==='front');backBtn.classList.toggle('selected',v==='back');frontSvg.style.display=v==='front'?'block':'none';backSvg.style.display=v==='back'?'block':'none';clearSelected()}
+function clearSelected(){document.querySelectorAll('.zone').forEach(z=>z.classList.remove('selected'));state.zones=[];selectedText.textContent='No area selected yet.';mapContinue.disabled=true}
+function toggleChip(el){el.classList.toggle('selected')}
+document.querySelectorAll('.zone').forEach(z=>z.addEventListener('click',()=>{
+ z.classList.toggle('selected');const n=z.dataset.zone;
+ if(z.classList.contains('selected')){if(!state.zones.includes(n))state.zones.push(n)}else state.zones=state.zones.filter(x=>x!==n);
+ selectedText.textContent=state.zones.length?'Selected: '+state.zones.join(', ').replaceAll('-',' '):'No area selected yet.';
+ mapContinue.disabled=!state.zones.length;
+}));
+severity.addEventListener('input',()=>{score.textContent=severity.value;score2.textContent=severity.value});
+
+function selectedTexts(id){return [...document.querySelectorAll('#'+id+' .chip.selected')].map(x=>x.textContent)}
+
+const areaInfo={
+  head:{title:"Head pain",causes:[["Tension-type headache","Muscle tension, stress, poor sleep or prolonged screen/neck strain can contribute."],["Migraine","Can cause moderate or severe headache, sometimes with nausea or sensitivity to light or sound."],["Sinus-related symptoms","Pressure around the forehead, cheeks or eyes can occur with sinus inflammation or congestion."],["Other causes","Headache has many possible causes; new, severe or unusual symptoms may need medical assessment."]]},
+  neck:{title:"Neck pain",causes:[["Muscle or joint strain","Awkward posture, prolonged screen use, exercise or an unusual sleeping position can contribute."],["Whiplash or injury","Neck pain can follow a sudden movement or impact."],["Nerve irritation","A nerve problem can sometimes cause pain, tingling or weakness into an arm."],["Other causes","Persistent, severe or unexplained neck pain should be assessed by a healthcare professional."]]},
+  chest:{title:"Chest pain",causes:[["Muscle or chest-wall pain","Strain or inflammation can affect muscles and tissues around the chest."],["Digestive causes","Indigestion or acid reflux can sometimes cause burning or discomfort."],["Respiratory causes","Some lung or airway problems can cause chest discomfort, particularly with breathing or coughing."],["Heart-related causes","Some heart problems can cause chest pressure, tightness or pain and require urgent assessment."]]},
+  abdomen:{title:"Abdominal pain",causes:[["Digestive causes","Indigestion, constipation, trapped wind or stomach irritation can cause abdominal discomfort."],["Infection or inflammation","Some infections and inflammatory conditions can cause pain, fever, nausea or vomiting."],["Urinary causes","Urinary-tract or kidney problems can sometimes cause abdominal or side pain."],["Other causes","Possible causes depend strongly on exact location, duration and associated symptoms."]]},
+  pelvis:{title:"Pelvic pain",causes:[["Musculoskeletal causes","Muscle, joint or pelvic-floor problems can cause localized pain."],["Urinary causes","Bladder or urinary-tract problems can cause pelvic pain or pressure."],["Digestive causes","Bowel problems can sometimes cause pain in the lower abdomen or pelvis."],["Reproductive-organ causes","Depending on sex and circumstances, reproductive organs can be a source of pelvic pain."]]},
+  "upper-back":{title:"Upper back pain",causes:[["Muscle strain","Lifting, exercise, prolonged sitting or awkward posture can strain upper-back muscles."],["Joint or spinal irritation","Problems involving joints or spinal structures can cause localized pain."],["Nerve irritation","Nerve irritation can sometimes cause burning, tingling or pain spreading elsewhere."],["Other causes","Upper-back pain with chest symptoms, breathing difficulty or severe illness needs prompt assessment."]]},
+  "lower-back":{title:"Lower back pain",causes:[["Muscle or ligament strain","Lifting, movement or prolonged activity can strain the lower back."],["Back-joint or disc problems","Structures in the lower spine can sometimes cause localized or radiating pain."],["Nerve irritation","A nerve problem can cause pain, tingling, numbness or weakness into a leg."],["Other causes","Severe or persistent pain, especially with neurological or bladder/bowel symptoms, needs medical assessment."]]},
+  "left-arm":{title:"Left arm pain",causes:[["Muscle or joint strain","Exercise, repetitive use or an injury can cause localized arm pain."],["Nerve irritation","Nerves from the neck or arm can cause pain, tingling or numbness."],["Circulation-related problems","Some circulation problems can cause pain, swelling, colour change or coldness."],["Heart-related symptoms","Arm pain with chest pressure, breathlessness, sweating or feeling very unwell can be an emergency."]]},
+  "right-arm":{title:"Right arm pain",causes:[["Muscle or joint strain","Exercise, repetitive use or an injury can cause localized arm pain."],["Nerve irritation","Nerves from the neck or arm can cause pain, tingling or numbness."],["Circulation-related problems","Some circulation problems can cause pain, swelling, colour change or coldness."],["Other causes","Persistent, severe or unexplained arm pain should be assessed by a healthcare professional."]]},
+  "left-leg":{title:"Left leg pain",causes:[["Muscle or tendon strain","Exercise, overuse or injury can affect muscles and tendons."],["Joint-related pain","The hip, knee or ankle can cause pain felt elsewhere in the leg."],["Nerve irritation","A nerve problem can cause shooting, burning or tingling pain."],["Circulation-related problems","Sudden swelling, colour change, coldness or severe pain can require urgent assessment."]]},
+  "right-leg":{title:"Right leg pain",causes:[["Muscle or tendon strain","Exercise, overuse or injury can affect muscles and tendons."],["Joint-related pain","The hip, knee or ankle can cause pain felt elsewhere in the leg."],["Nerve irritation","A nerve problem can cause shooting, burning or tingling pain."],["Circulation-related problems","Sudden swelling, colour change, coldness or severe pain can require urgent assessment."]]}
+};
+function renderCauseInformation(zones){
+  const box=document.getElementById('causeResults'); if(!box)return;
+  box.innerHTML=[...new Set(zones)].map(zone=>{
+    const info=areaInfo[zone]; if(!info)return '';
+    return `<h3>${info.title}</h3>`+info.causes.map(c=>`<div class="result"><strong>${c[0]}</strong>${c[1]}</div>`).join('');
+  }).join('');
+}
+
+
+const zoneNames={
+ head:"Head",neck:"Neck","left-shoulder":"Left shoulder","right-shoulder":"Right shoulder",
+ "left-chest":"Left chest","right-chest":"Right chest","upper-abdomen":"Upper abdomen",
+ "upper-abdomen-right":"Upper abdomen (right)","lower-abdomen-left":"Lower abdomen (left)",
+ "lower-abdomen-right":"Lower abdomen (right)",pelvis:"Pelvis","left-upper-arm":"Left upper arm",
+ "right-upper-arm":"Right upper arm","left-elbow":"Left elbow","right-elbow":"Right elbow",
+ "left-forearm":"Left forearm","right-forearm":"Right forearm","left-hand":"Left hand",
+ "right-hand":"Right hand","left-thigh":"Left thigh","right-thigh":"Right thigh",
+ "left-knee":"Left knee","right-knee":"Right knee","left-lower-leg":"Left lower leg",
+ "right-lower-leg":"Right lower leg","left-foot":"Left foot","right-foot":"Right foot",
+ "upper-back-left":"Upper back (left)","upper-back-right":"Upper back (right)",
+ "lower-back-left":"Lower back (left)","lower-back-right":"Lower back (right)"
+};
+
+// Map detailed body-map zones to the broader symptom information used by the app.
+// This keeps the detailed front/back map while ensuring every selectable area returns useful information.
+const zoneAliases={
+  "left-chest":"chest","right-chest":"chest",
+  "upper-abdomen":"abdomen","upper-abdomen-right":"abdomen",
+  "lower-abdomen-left":"abdomen","lower-abdomen-right":"abdomen",
+  "upper-back-left":"upper-back","upper-back-right":"upper-back",
+  "lower-back-left":"lower-back","lower-back-right":"lower-back",
+  "left-upper-arm":"left-arm","left-elbow":"left-arm","left-forearm":"left-arm","left-hand":"left-arm",
+  "right-upper-arm":"right-arm","right-elbow":"right-arm","right-forearm":"right-arm","right-hand":"right-arm",
+  "left-thigh":"left-leg","left-knee":"left-leg","left-lower-leg":"left-leg","left-foot":"left-leg",
+  "right-thigh":"right-leg","right-knee":"right-leg","right-lower-leg":"right-leg","right-foot":"right-leg"
+};
+
+const causeRules=[
+ {keys:["burning","pressure"],areas:["chest","left-chest","right-chest"],title:"Chest discomfort can have several causes",text:"Muscle or chest-wall pain and digestive causes are possible; some heart or respiratory problems can also cause chest symptoms."},
+ {keys:["tingling","numbness"],areas:[],title:"Nerve-related symptoms",text:"Tingling or numbness can occur when a nerve is irritated or compressed, including in the neck, back or limb."},
+ {keys:["movement","exercise"],areas:[],title:"Musculoskeletal causes",text:"Pain affected by movement or exercise can occur with muscles, tendons, joints or other musculoskeletal tissues."},
+ {keys:["fever","swelling"],areas:[],title:"Inflammation or infection",text:"Pain with fever or swelling can occur with inflammation or infection and may need medical assessment depending on severity and location."},
+ {keys:["eating"],areas:["abdomen","upper-abdomen","upper-abdomen-right","lower-abdomen-left","lower-abdomen-right"],title:"Digestive causes",text:"Some abdominal pain is related to digestion, including indigestion, constipation, trapped wind or other gastrointestinal problems."}
+];
+
+function selectedTexts(id){return [...document.querySelectorAll('#'+id+' .chip.selected')].map(x=>x.textContent)}
+function selectSingle(el,id){
+  document.querySelectorAll('#'+id+' button').forEach(x=>x.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function getSingle(id){const el=document.querySelector('#'+id+' button.selected');return el?el.textContent:''}
+function friendlyZones(){return state.zones.map(z=>zoneNames[z]||z.replaceAll('-',' '))}
+function resetQuestions(){
+  document.querySelectorAll('.chip.selected').forEach(x=>x.classList.remove('selected'));
+  document.querySelectorAll('.choice button.selected').forEach(x=>x.classList.remove('selected'));
+}
+function renderSmartCauses(zones,sensations,symptoms,triggers){
+  const box=document.getElementById('causeResults'); if(!box)return;
+  const areaSet=new Set(zones), text=[...sensations,...symptoms,...triggers].map(x=>x.toLowerCase());
+  const rules=[];
+  zones.forEach(z=>{
+    const key=zoneAliases[z]||z;
+    const n=(areaInfo[key]||{}).title;
+    if(n && areaInfo[key].causes) rules.push(...areaInfo[key].causes.map(c=>[c[0],c[1]]));
+  });
+  causeRules.forEach(r=>{
+    const match=r.keys.some(k=>text.includes(k)) && (!r.areas.length || r.areas.some(a=>areaSet.has(a)));
+    if(match) rules.push([r.title,r.text]);
+  });
+  const seen=new Set();
+  const unique=rules.filter(x=>{if(seen.has(x[0]))return false;seen.add(x[0]);return true}).slice(0,8);
+  box.innerHTML=unique.map(c=>`<div class="result"><strong>${c[0]}</strong><div class="why">${c[1]}</div></div>`).join('');
+}
+function renderSafety(severity,symptoms){
+  const urgent=document.getElementById('urgent');
+  const reasons=[];
+  if(symptoms.includes('Breathing trouble')) reasons.push('breathing difficulty');
+  if(symptoms.includes('Fainting')) reasons.push('fainting');
+  if(symptoms.includes('Bleeding')) reasons.push('bleeding');
+  if(Number(severity)>=9) reasons.push('very severe pain');
+  urgent.style.display=reasons.length?'block':'none';
+  if(reasons.length) urgent.innerHTML=`<strong>Seek urgent medical help</strong><br>Reported: ${reasons.join(', ')}. If this is severe, sudden, rapidly worsening, or you feel seriously unwell, seek urgent medical help. In the UK, call <strong>999</strong> for a life-threatening emergency; use <strong>NHS 111</strong> for urgent advice when it is not an emergency.`;
+}
+
+function showResults(){
+  const sensations=selectedTexts('types'), symptoms=selectedTexts('otherSymptoms'), triggers=selectedTexts('triggers');
+  const trend=getSingle('trend');
+  const names=friendlyZones();
+  summary.textContent=`You selected ${state.sex||'a'} ${state.sex?'':'body'} map area${names.length>1?'s':''}: ${names.join(', ')}. Pain severity: ${severity.value}/10. ${trend?'Trend: '+trend+'. ':''}${sensations.length?'Pain type: '+sensations.join(', ')+'. ':''}${symptoms.length?'Other symptoms: '+symptoms.join(', ')+'.':''}`;
+  renderSmartCauses(state.zones,sensations,symptoms,triggers);
+  renderSafety(severity.value,symptoms);
+  const item={id:Date.now(),date:new Date().toISOString(),sex:state.sex||'',zones:[...state.zones],severity:Number(severity.value),sensations,symptoms,triggers,duration:duration.value,trend};
+  const history=JSON.parse(localStorage.getItem('painpoint_history')||'[]'); history.unshift(item); localStorage.setItem('painpoint_history',JSON.stringify(history.slice(0,20)));
+  show('results');
+}
+function resetAssessment(){
+ state.sex='';state.zones=[];state.view='front';female.classList.remove('selected');male.classList.remove('selected');
+ severity.value=5;score.textContent=5;score2.textContent=5;duration.selectedIndex=0;resetQuestions();
+ document.querySelectorAll('.chip.selected').forEach(x=>x.classList.remove('selected'));setView('front');show('home');
+}
+function showHistory(){
+ const items=JSON.parse(localStorage.getItem('painpoint_history')||'[]');const box=document.getElementById('historyList');
+ if(!items.length){box.innerHTML='<div class="empty">No assessments saved yet.</div>'}
+ else box.innerHTML=items.map(x=>`<div class="history-item"><strong>${new Date(x.date).toLocaleString()}</strong><span>${x.sex?x.sex+' · ':''}${x.zones.map(z=>zoneNames[z]||z.replaceAll('-',' ')).join(', ')} · ${x.severity}/10 · ${x.duration}</span></div>`).join('');
+ show('history');
+}
+function clearHistory(){if(confirm('Clear all saved assessment history from this device?')){localStorage.removeItem('painpoint_history');showHistory()}}
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstallPrompt=e;installBtn.style.display='block'});
+installBtn.addEventListener('click',async()=>{if(!deferredInstallPrompt)return;deferredInstallPrompt.prompt();await deferredInstallPrompt.userChoice;deferredInstallPrompt=null;installBtn.style.display='none'});
+if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js'));
+</script>
+</body>
+</html>
